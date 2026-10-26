@@ -5,6 +5,7 @@ import {
 	exportSvg,
 	lintDiagram,
 } from "@bpmnkit/core";
+import sharp from "sharp";
 
 const definitions = Bpmn.createProcess("Process_ToBe")
 	.name("Внесение изменений в действующую информационную систему — TO-BE")
@@ -246,5 +247,14 @@ if (report.counts.error) {
 const svg = exportSvg(diagram).replaceAll("#f8f9fa", "#ffffff");
 await Bun.write(new URL("./to-be.bpmn", import.meta.url), Bpmn.export(diagram));
 await Bun.write(new URL("./to-be.svg", import.meta.url), svg);
+await Bun.write(
+	new URL("../../images/bpmn-to-be.png", import.meta.url),
+	await sharp(Buffer.from(svg), { density: 192 })
+		.resize({ width: 8000 })
+		.flatten({ background: "#ffffff" })
+		.withMetadata({ density: 600 })
+		.png()
+		.toBuffer(),
+);
 
-console.log("Созданы `to-be.bpmn` и `to-be.svg` в `./diagrams/bpmn-to-be-model/`");
+console.log("Созданы `to-be.bpmn` и `to-be.svg` в `./diagrams/bpmn-to-be-model/`, PNG — в `./images/bpmn-to-be.png`");

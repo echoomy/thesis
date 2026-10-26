@@ -5,6 +5,7 @@ import {
 	exportSvg,
 	lintDiagram,
 } from "@bpmnkit/core";
+import sharp from "sharp";
 
 const definitions = Bpmn.createProcess("Process_AsIs")
 	.name("Внесение изменений в действующую информационную систему — AS-IS")
@@ -218,5 +219,14 @@ if (report.counts.error) {
 const svg = exportSvg(diagram).replaceAll("#f8f9fa", "#ffffff");
 await Bun.write(new URL("./as-is.bpmn", import.meta.url), Bpmn.export(diagram));
 await Bun.write(new URL("./as-is.svg", import.meta.url), svg);
+await Bun.write(
+	new URL("../../images/bpmn-as-is.png", import.meta.url),
+	await sharp(Buffer.from(svg), { density: 192 })
+		.resize({ width: 8000 })
+		.flatten({ background: "#ffffff" })
+		.withMetadata({ density: 600 })
+		.png()
+		.toBuffer(),
+);
 
-console.log("Созданы `as-is.bpmn` и `as-is.svg` в `./diagrams/bpmn-as-is-model/`");
+console.log("Созданы `as-is.bpmn` и `as-is.svg` в `./diagrams/bpmn-as-is-model/`, PNG — в `./images/bpmn-as-is.png`");
