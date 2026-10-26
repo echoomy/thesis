@@ -3,6 +3,7 @@
 \usepackage[left=30mm,right=10mm,top=20mm,bottom=20mm]{geometry}
 
 \usepackage[labelsep=endash]{caption}
+\captionsetup[table]{position=top,justification=raggedleft,singlelinecheck=false}
 
 \usepackage[english,russian]{babel}
 \addto\captionsrussian{\renewcommand{\figurename}{Рисунок}}
@@ -26,6 +27,8 @@
 \usepackage{graphicx}
 \graphicspath{{./images/}}
 \usepackage{pdflscape}
+\usepackage{tabularx}
+\newcolumntype{Y}[1]{>{\hsize=#1\hsize\linewidth=\hsize\raggedright\arraybackslash}X}
 
 \title{Проектно-технологический практикум}
 \author{Егор Чумичев}
