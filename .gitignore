@@ -3,3 +3,7 @@
 .vscode/
 node_modules/
 .DS_Store
+
+/diagrams/**/*.bpmn
+/diagrams/**/*.svg
+/diagrams/**/*.png
