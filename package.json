@@ -1,0 +1,23 @@
+{
+  "name": "thesis",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "g": "bun generate",
+		"l": "bun lint",
+		"p": "bun purge",
+    "generate": "latexmk",
+		"lint": "chktex *.tex",
+    "purge": "latexmk -c"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4"
+  },
+  "peerDependencies": {
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@bpmnkit/core": "^1.6.1"
+  }
+}
