@@ -5,6 +5,7 @@
 \usepackage[labelsep=endash]{caption}
 
 \usepackage[english,russian]{babel}
+\addto\captionsrussian{\renewcommand{\figurename}{Рисунок}}
 
 \usepackage{enumitem}
 \setlist[enumerate]{leftmargin=12.5mm}
@@ -21,6 +22,9 @@
 \usepackage{titlesec}
 \titleformat{\section}{\centering\normalsize\MakeUppercase}{Глава\ \thesection.}{0.5em}{}
 \titleformat{\subsection}{\centering\normalsize\MakeUppercase}{\thesubsection.}{0.5em}{}
+
+\usepackage{graphicx}
+\graphicspath{{./images/}}
 
 \title{Проектно-технологический практикум}
 \author{Егор Чумичев}
