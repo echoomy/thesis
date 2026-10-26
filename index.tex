@@ -1,0 +1,31 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage[left=30mm,right=10mm,top=20mm,bottom=20mm]{geometry}
+
+\usepackage[labelsep=endash]{caption}
+
+\usepackage[english,russian]{babel}
+
+\usepackage{enumitem}
+\setlist[enumerate]{leftmargin=12.5mm}
+
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+
+\usepackage[onehalfspacing]{setspace}
+
+\usepackage{indentfirst}
+\setlength{\parindent}{12.5mm}
+
+\usepackage{titlesec}
+\titleformat{\section}{\centering\normalsize\MakeUppercase}{Глава\ \thesection.}{0.5em}{}
+\titleformat{\subsection}{\centering\normalsize\MakeUppercase}{\thesubsection.}{0.5em}{}
+
+\title{Проектно-технологический практикум}
+\author{Егор Чумичев}
+
+\begin{document}
+	\input{chapters/01-solution-analysis/index}
+	\input{chapters/02-subject-area-analysis/index}
+	\input{chapters/03-business-process-analysis/index}
+\end{document}
