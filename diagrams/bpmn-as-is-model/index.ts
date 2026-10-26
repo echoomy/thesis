@@ -215,7 +215,8 @@ if (report.counts.error) {
 	throw new Error(`Ошибки BPMN: ${JSON.stringify(report.diagnostics)}`);
 }
 
+const svg = exportSvg(diagram).replaceAll("#f8f9fa", "#ffffff");
 await Bun.write(new URL("./as-is.bpmn", import.meta.url), Bpmn.export(diagram));
-await Bun.write(new URL("./as-is.svg", import.meta.url), exportSvg(diagram));
+await Bun.write(new URL("./as-is.svg", import.meta.url), svg);
 
 console.log("Созданы `as-is.bpmn` и `as-is.svg` в `./diagrams/bpmn-as-is-model/`");
