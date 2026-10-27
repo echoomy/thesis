@@ -9,7 +9,7 @@
     "p": "bun purge",
     "generate": "latexmk",
     "generate:diagrams": "bun diagrams/bpmn-as-is-model/index.ts && bun diagrams/bpmn-to-be-model/index.ts",
-    "lint": "chktex *.tex",
+    "lint": "lacheck *.tex",
     "purge": "latexmk -c"
   },
   "devDependencies": {
