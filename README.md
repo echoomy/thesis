@@ -1,23 +1,27 @@
 # Bachelor’s Thesis
 
-LaTeX source for bachelor’s thesis at the University of Tyumen.
+LaTeX source files for a bachelor’s thesis at the University of Tyumen.
 
 ## Tools
 
-The following tools are used to work on this project:
+This project uses the following tools:
 
-- [MacTeX](https://www.tug.org/mactex/) — TeX distribution for macOS, including LuaLaTeX and `latexmk`.
-- [Bun](https://bun.com) — TypeScript runtime for diagram rendering.
+- [MacTeX](https://www.tug.org/mactex/) — a TeX distribution for macOS that includes LuaLaTeX and `latexmk`.
+- [Bun](https://bun.com) — a TypeScript runtime for generating diagrams.
 
-## Generate diagrams
+## Diagrams
+
+Some figures in the document are generated using Bun.
+
+To generate the diagrams, install the dependencies and run the `generate:diagrams` script:
 
 ```sh
 bun install
 bun run generate:diagrams
 ```
 
-Both generators save BPMN and SVG files next to their source scripts and PNG files, 8000 pixels wide, in `images/` for the LaTeX document.
+Both generators save BPMN and SVG files alongside their source scripts and PNG files in `./images/` for inclusion in the LaTeX document.
 
 ## Credits
 
-Made by Egor Chumichev. Feel free to DM on [Telegram](https://t.me/echoomy).
+Written by Egor Chumichev. Feel free to DM me on [Telegram](https://t.me/echoomy).
