@@ -20,7 +20,7 @@ jobs:
       - name: "Install `chktex` package"
         run: |
           sudo apt-get update
-          sudo apt-get install -y texlive-extra-utils
+          sudo apt-get install -y lacheck
 
       - name: "Lint LaTeX source"
         shell: bash
