@@ -1,11 +1,11 @@
 import {
-	applyAutoLayout,
 	Bpmn,
 	checkDiCompleteness,
 	exportSvg,
 	lintDiagram,
 } from "@bpmnkit/core";
 import sharp from "sharp";
+import { applyManualAsIsLayout } from "./layout";
 
 const definitions = Bpmn.createProcess("Process_AsIs")
 	.name("Внесение изменений в действующую информационную систему — AS-IS")
@@ -24,7 +24,7 @@ const definitions = Bpmn.createProcess("Process_AsIs")
 		branch.label("Да").condition("= implementationApproved").connectTo("Task_PrepareSpecification"),
 	)
 	.branch("implementation-rejected", (branch) =>
-		branch.label("Нет").defaultFlow().endEvent("Event_ChangeNotApproved", {
+		branch.label("Нет").condition("= not(implementationApproved)").endEvent("Event_ChangeNotApproved", {
 			name: "Изменение не согласовано",
 		}),
 	)
@@ -54,7 +54,7 @@ const definitions = Bpmn.createProcess("Process_AsIs")
 		branch.label("Да").condition("= codeApproved").connectTo("Task_BuildTestVersion"),
 	)
 	.branch("code-rework", (branch) =>
-		branch.label("Нет").defaultFlow().connectTo("Gateway_DevelopmentEntry"),
+		branch.label("Нет").condition("= not(codeApproved)").connectTo("Gateway_DevelopmentEntry"),
 	)
 	.manualTask("Task_BuildTestVersion", {
 		name: "Собрать изменённые веб-сервисы",
@@ -74,7 +74,7 @@ const definitions = Bpmn.createProcess("Process_AsIs")
 		branch.label("Да").condition("= testsPassed").connectTo("Task_MergeMainBranch"),
 	)
 	.branch("test-rework", (branch) =>
-		branch.label("Нет").defaultFlow().connectTo("Gateway_DevelopmentEntry"),
+		branch.label("Нет").condition("= not(testsPassed)").connectTo("Gateway_DevelopmentEntry"),
 	)
 	.userTask("Task_MergeMainBranch", {
 		name: "Слить изменения в основную ветку",
@@ -95,7 +95,7 @@ const definitions = Bpmn.createProcess("Process_AsIs")
 		branch.label("Да").condition("= customerApproved").connectTo("Task_BuildProductionVersion"),
 	)
 	.branch("customer-rework", (branch) =>
-		branch.label("Нет").defaultFlow().connectTo("Gateway_DevelopmentEntry"),
+		branch.label("Нет").condition("= not(customerApproved)").connectTo("Gateway_DevelopmentEntry"),
 	)
 	.manualTask("Task_BuildProductionVersion", {
 		name: "Собрать согласованную версию системы",
@@ -187,24 +187,7 @@ definitions.collaborations = [
 delete definitions.unknownAttributes["modeler:executionPlatform"];
 delete definitions.unknownAttributes["modeler:executionPlatformVersion"];
 
-const diagram = applyAutoLayout(definitions);
-
-const plane = diagram.diagrams[0]!.plane;
-const pool = plane.shapes.find((shape) => shape.bpmnElement === "Participant_AsIs")!;
-const laneIds = new Set(process.laneSet.lanes.map((lane) => lane.id));
-
-const bottomLane = plane.shapes
-	.filter((shape) => laneIds.has(shape.bpmnElement))
-	.toSorted((a, b) => a.bounds.y + a.bounds.height - b.bounds.y - b.bounds.height)
-	.at(-1)!;
-
-const lowestFlowY = Math.max(...plane.edges.flatMap((edge) => edge.waypoints.map((point) => point.y)));
-
-const bottomPadding = 32;
-const extraHeight = Math.max(0, lowestFlowY + bottomPadding - (bottomLane.bounds.y + bottomLane.bounds.height));
-
-bottomLane.bounds.height += extraHeight;
-pool.bounds.height += extraHeight;
+const diagram = applyManualAsIsLayout(definitions);
 
 const completeness = checkDiCompleteness(diagram);
 if (completeness.missingShapes.length || completeness.missingEdges.length) {

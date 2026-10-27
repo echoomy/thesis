@@ -1,11 +1,11 @@
 import {
-	applyAutoLayout,
 	Bpmn,
 	checkDiCompleteness,
 	exportSvg,
 	lintDiagram,
 } from "@bpmnkit/core";
 import sharp from "sharp";
+import { applyManualToBeLayout } from "./layout";
 
 const definitions = Bpmn.createProcess("Process_ToBe")
 	.name("Внесение изменений в действующую информационную систему — TO-BE")
@@ -24,7 +24,7 @@ const definitions = Bpmn.createProcess("Process_ToBe")
 		branch.label("Да").condition("= implementationApproved").connectTo("Task_PrepareSpecification"),
 	)
 	.branch("implementation-rejected", (branch) =>
-		branch.label("Нет").defaultFlow().endEvent("Event_ChangeNotApproved", {
+		branch.label("Нет").condition("= not(implementationApproved)").endEvent("Event_ChangeNotApproved", {
 			name: "Изменение не согласовано",
 		}),
 	)
@@ -57,7 +57,7 @@ const definitions = Bpmn.createProcess("Process_ToBe")
 		branch.label("Да").condition("= testEnvironmentReady").connectTo("Task_ReviewCode"),
 	)
 	.branch("automation-failed", (branch) =>
-		branch.label("Нет").defaultFlow().serviceTask("Task_NotifyDeveloper", {
+		branch.label("Нет").condition("= not(testEnvironmentReady)").serviceTask("Task_NotifyDeveloper", {
 			name: "Сообщить разработчику об ошибках",
 			taskType: "notify-developer",
 		}).connectTo("Gateway_DevelopmentEntry"),
@@ -72,7 +72,7 @@ const definitions = Bpmn.createProcess("Process_ToBe")
 		branch.label("Да").condition("= codeApproved").connectTo("Task_TestChanges"),
 	)
 	.branch("code-rework", (branch) =>
-		branch.label("Нет").defaultFlow().connectTo("Gateway_DevelopmentEntry"),
+		branch.label("Нет").condition("= not(codeApproved)").connectTo("Gateway_DevelopmentEntry"),
 	)
 	.userTask("Task_TestChanges", {
 		name: "Проверить функционал и совместимость",
@@ -84,7 +84,7 @@ const definitions = Bpmn.createProcess("Process_ToBe")
 		branch.label("Да").condition("= testsPassed").connectTo("Task_MergeMainBranch"),
 	)
 	.branch("test-rework", (branch) =>
-		branch.label("Нет").defaultFlow().connectTo("Gateway_DevelopmentEntry"),
+		branch.label("Нет").condition("= not(testsPassed)").connectTo("Gateway_DevelopmentEntry"),
 	)
 	.userTask("Task_MergeMainBranch", {
 		name: "Слить изменения в основную ветку",
@@ -104,7 +104,7 @@ const definitions = Bpmn.createProcess("Process_ToBe")
 		branch.label("Да").condition("= customerApproved").connectTo("Task_TriggerProductionDeployment"),
 	)
 	.branch("customer-rework", (branch) =>
-		branch.label("Нет").defaultFlow().connectTo("Gateway_DevelopmentEntry"),
+		branch.label("Нет").condition("= not(customerApproved)").connectTo("Gateway_DevelopmentEntry"),
 	)
 	.userTask("Task_TriggerProductionDeployment", {
 		name: "Запустить выпуск по расписанию релизов",
@@ -199,40 +199,7 @@ definitions.collaborations = [
 delete definitions.unknownAttributes["modeler:executionPlatform"];
 delete definitions.unknownAttributes["modeler:executionPlatformVersion"];
 
-const diagram = applyAutoLayout(definitions);
-const plane = diagram.diagrams[0]!.plane;
-const pool = plane.shapes.find((shape) => shape.bpmnElement === "Participant_ToBe")!;
-const laneIds = new Set(process.laneSet.lanes.map((lane) => lane.id));
-const laneShapes = plane.shapes
-	.filter((shape) => laneIds.has(shape.bpmnElement))
-	.toSorted((a, b) => a.bounds.y - b.bounds.y);
-
-for (let index = 0; index < laneShapes.length - 1; index++) {
-	const lane = laneShapes[index]!;
-	const nextLane = laneShapes[index + 1]!;
-	const borderY = lane.bounds.y + lane.bounds.height;
-	const touchesBorder = plane.edges.some((edge) => edge.waypoints.some((point, index) => {
-		const next = edge.waypoints[index + 1];
-		return next && point.y === borderY && next.y === borderY && point.x !== next.x;
-	}));
-	if (!touchesBorder) continue;
-
-	const nextLaneRefs = new Set(process.laneSet.lanes.find((item) => item.id === nextLane.bpmnElement)!.flowNodeRefs);
-	const nextNodeTop = Math.min(...plane.shapes
-		.filter((shape) => nextLaneRefs.has(shape.bpmnElement))
-		.map((shape) => shape.bounds.y));
-	const padding = Math.min(16, Math.max(0, (nextNodeTop - borderY) / 2));
-	lane.bounds.height += padding;
-	nextLane.bounds.y += padding;
-	nextLane.bounds.height -= padding;
-}
-
-const bottomLane = laneShapes.at(-1)!;
-const lowestFlowY = Math.max(...plane.edges.flatMap((edge) => edge.waypoints.map((point) => point.y)));
-const extraHeight = Math.max(0, lowestFlowY + 32 - (bottomLane.bounds.y + bottomLane.bounds.height));
-
-bottomLane.bounds.height += extraHeight;
-pool.bounds.height += extraHeight;
+const diagram = applyManualToBeLayout(definitions);
 
 const completeness = checkDiCompleteness(diagram);
 if (completeness.missingShapes.length || completeness.missingEdges.length) {
